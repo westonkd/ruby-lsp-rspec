@@ -25,6 +25,7 @@ module RubyLsp
         super
         @debug = false #: bool
         @rspec_command = nil #: String?
+        @rspec_args = nil #: String?
       end
 
       # @override
@@ -35,6 +36,7 @@ module RubyLsp
 
         settings = global_state.settings_for_addon(name)
         @rspec_command = rspec_command(settings)
+        @rspec_args = rspec_args(settings)
         @workspace_path = global_state.workspace_path #: String?
         @debug = settings&.dig(:debug) || false
       end
@@ -115,7 +117,7 @@ module RubyLsp
             full_files << path if children.empty?
           elsif tags.include?("test_group")
             start_line = item.dig(:range, :start, :line)
-            commands << "#{@rspec_command} -r #{FORMATTER_PATH} -f #{FORMATTER_NAME} #{path}:#{start_line + 1}"
+            commands << "#{@rspec_command} #{@rspec_args} #{path}:#{start_line + 1}"
           else
             full_files << "#{path}:#{item.dig(:range, :start, :line) + 1}"
           end
@@ -124,7 +126,7 @@ module RubyLsp
         end
 
         unless full_files.empty?
-          commands << "#{@rspec_command} -r #{FORMATTER_PATH} -f #{FORMATTER_NAME} #{full_files.join(" ")}"
+          commands << "#{@rspec_command} #{@rspec_args} #{full_files.join(" ")}"
         end
 
         commands
@@ -151,6 +153,15 @@ module RubyLsp
       end
 
       private
+
+      #: (Hash[Symbol, untyped]?) -> String?
+      def rspec_args(settings)
+        # The user has customized the rspec command, don't make
+        # assumptions about the desired formatter
+        return if settings&.dig(:rspecCommand)
+
+        "-r #{FORMATTER_PATH} -f #{FORMATTER_NAME}"
+      end
 
       #: (Hash[Symbol, untyped]?) -> String
       def rspec_command(settings)

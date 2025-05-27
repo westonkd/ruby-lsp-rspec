@@ -79,6 +79,8 @@ All configuration options must be nested under the `Ruby LSP RSpec` addon within
 
 Customize the command used to run tests via CodeLens. If not set, the command will be inferred based on the presence of a binstub or Gemfile.
 
+If this option is used, ruby-lsp-rspec will not set its default formatter path and name arguments.
+
 **Default Value**: `nil`
 
 **Example:**
